@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>UnitMode Action Bar Options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a1a;
+    font-family: 'Georgia', serif;
+    padding: 30px 40px 40px;
+    color: #ccc;
+  }
+
+  h1 {
+    color: #ffd100;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    text-shadow: 0 0 8px #aa8800;
+  }
+
+  .option {
+    margin-bottom: 36px;
+  }
+
+  .option-label {
+    font-size: 13px;
+    color: #ffd100;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .option-desc {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+
+  /* ── WoW bottom UI chrome ── */
+  .ui-root {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    width: 640px;
+    height: 80px;
+  }
+
+  /* Stone art frame background */
+  .art-frame {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 120%, #2e2218 60%, #1a1108 100%);
+    border-top: 2px solid #5a4830;
+    border-left: 2px solid #6a5840;
+    border-right: 2px solid #6a5840;
+    border-bottom: none;
+  }
+
+  /* Stone texture overlay */
+  .art-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px),
+      repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(255,255,255,0.02) 5px, rgba(255,255,255,0.02) 6px);
+    pointer-events: none;
+  }
+
+  /* Gryphon endcaps */
+  .gryphon {
+    position: relative;
+    width: 66px;
+    height: 80px;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
+  .gryphon-left {
+    background:
+      radial-gradient(ellipse at 80% 60%, #4a3520 30%, #1e150a 80%);
+    border-top: 2px solid #6a4820;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 10% 100%);
+  }
+
+  .gryphon-right {
+    background:
+      radial-gradient(ellipse at 20% 60%, #4a3520 30%, #1e150a 80%);
+    border-top: 2px solid #6a4820;
+    clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);
+  }
+
+  /* Wing shape suggestion */
+  .gryphon::before {
+    content: '🦅';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    opacity: 0.35;
+    filter: sepia(1) saturate(0.5);
+  }
+
+  /* Buttons container */
+  .buttons {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 4px 8px;
+    flex: 1;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Individual action button */
+  .btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #5a4830;
+    background: #0e0c0a;
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .btn .hotkey {
+    position: absolute;
+    top: 1px;
+    right: 2px;
+    font-size: 8px;
+    color: #ddd;
+    font-family: Arial, sans-serif;
+    line-height: 1;
+    z-index: 3;
+    text-shadow: 1px 1px 1px #000;
+  }
+
+  /* Icon fill colors for the 5 active slots */
+  .btn.core1 { background: linear-gradient(135deg, #8b0000 0%, #cc2200 60%, #ff4400 100%); }
+  .btn.core2 { background: linear-gradient(135deg, #00448b 0%, #0066cc 60%, #0088ff 100%); }
+  .btn.core3 { background: linear-gradient(135deg, #448b00 0%, #66aa00 60%, #88dd00 100%); }
+  .btn.core4 { background: linear-gradient(135deg, #8b6600 0%, #cc9900 60%, #ffcc00 100%); }
+  .btn.ultimate {
+    background: linear-gradient(135deg, #550088 0%, #8800cc 60%, #aa00ff 100%);
+    border-color: #9955cc;
+    box-shadow: 0 0 6px rgba(170, 0, 255, 0.5);
+  }
+
+  /* Empty slot (WoW empty button) */
+  .btn.empty {
+    background: #0a0907;
+    border-color: #3a2e20;
+  }
+
+  /* Overlay — dark blocked slot */
+  .btn.blocked {
+    background: #050403;
+    border-color: #1a1510;
+  }
+  .btn.blocked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+  }
+
+  /* Bag slots bar */
+  .bag-bar {
+    position: absolute;
+    bottom: 0;
+    right: 70px;
+    display: flex;
+    gap: 2px;
+    padding: 4px 4px 2px;
+    z-index: 3;
+  }
+
+  .bag {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #5a4830;
+    background: #1a1208;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  /* XP bar */
+  .xp-bar {
+    position: absolute;
+    bottom: 0;
+    left: 66px;
+    right: 66px;
+    height: 5px;
+    background: #1a0a00;
+    z-index: 3;
+  }
+  .xp-fill {
+    height: 100%;
+    width: 65%;
+    background: linear-gradient(90deg, #7700ff, #aa44ff);
+  }
+
+  /* ── Option-specific overrides ── */
+
+  /* Option A: art frame hidden, buttons float */
+  .opt-a .art-frame { display: none; }
+  .opt-a .gryphon   { display: none; }
+  .opt-a .xp-bar    { display: none; }
+  .opt-a .bag-bar   { display: none; }
+  .opt-a .buttons   { background: transparent; padding-top: 22px; }
+  .opt-a .ui-root   { background: transparent; }
+
+  /* Option B: entire bar gone, nothing */
+  .opt-b .art-frame { display: none; }
+  .opt-b .gryphon   { display: none; }
+  .opt-b .buttons   { display: none; }
+  .opt-b .xp-bar    { display: none; }
+  .opt-b .bag-bar   { display: none; }
+  .opt-b .ui-root   {
+    background: repeating-linear-gradient(
+      45deg, #111, #111 10px, #0e0e0e 10px, #0e0e0e 20px
+    );
+    border: 1px dashed #333;
+    align-items: center;
+    justify-content: center;
+  }
+  .opt-b-label {
+    color: #444;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-style: italic;
+  }
+
+  /* Option C: custom WC3-style bar replaces everything */
+  .opt-c .art-frame { display: none; }
+  .opt-c .gryphon   { display: none; }
+  .opt-c .bag-bar   { display: none; }
+  .opt-c .xp-bar    { display: none; }
+  .opt-c .buttons   {
+    background: linear-gradient(180deg, #1a1208 0%, #0e0c08 100%);
+    border: 1px solid #6a4820;
+    border-bottom: none;
+    padding: 12px 16px 10px;
+    gap: 6px;
+    width: 100%;
+    justify-content: center;
+  }
+  .opt-c .btn {
+    width: 44px;
+    height: 44px;
+    border-width: 2px;
+  }
+  .opt-c .btn.ultimate {
+    width: 52px;
+    height: 52px;
+    border-color: #cc44ff;
+  }
+  .opt-c .btn .hotkey { display: none; }
+
+  /* WC3-style label under custom bar */
+  .wc3-labels {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    padding: 2px 16px 0;
+    background: #0a0807;
+    border: 1px solid #4a3010;
+    border-top: none;
+    width: 100%;
+  }
+  .wc3-label {
+    font-size: 8px;
+    color: #998866;
+    width: 44px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-bottom: 3px;
+  }
+  .wc3-label.ult {
+    width: 52px;
+    color: #aa77ee;
+  }
+
+  /* Option D: art hidden, hotkeys hidden, overlays stay */
+  .opt-d .art-frame { display: none; }
+  .opt-d .gryphon   { display: none; }
+  .opt-d .xp-bar    { display: none; }
+  .opt-d .bag-bar   { display: none; }
+  .opt-d .buttons   {
+    padding-top: 20px;
+    background: transparent;
+  }
+  .opt-d .btn .hotkey { display: none; }
+  .opt-d .ui-root { background: transparent; }
+
+  /* Current state ref */
+  .current .ui-root { }
+
+  /* Annotations */
+  .annotation {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #666;
+    font-family: Arial, sans-serif;
+  }
+  .annotation span { color: #ffd100; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch {
+    width: 14px; height: 14px; border: 1px solid #555;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 8px 0 28px;
+  }
+</style>
+</head>
+<body>
+
+<h1>UnitMode — Action Bar Display Options</h1>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#8b0000,#ff4400)"></div> Core ability</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(135deg,#550088,#aa00ff);border-color:#9955cc"></div> Ultimate</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#050403;border-color:#1a1510"></div> Blocked slot (overlay)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#0a0907;border-color:#3a2e20"></div> Empty slot</div>
+</div>
+
+<!-- ─────────────────────────────── CURRENT STATE ─────────────── -->
+<div class="option current">
+  <div class="option-label">Current state (for reference)</div>
+  <div class="option-desc">Stone art frame + gryphons visible. Slots 6–12 covered. Chrome unchanged.</div>
+  <div class="ui-root">
+    <div class="art-frame"></div>
+    <div class="gryphon gryphon-left"></div>
+    <div class="buttons">
+      <div class="btn core1"><span class="hotkey">1</span></div>
+      <div class="btn core2"><span class="hotkey">2</span></div>
+      <div class="btn core3"><span class="hotkey">3</span></div>
+      <div class="btn core4"><span class="hotkey">4</span></div>
+      <div class="btn ultimate"><span class="hotkey">5</span></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+    </div>
+    <div class="gryphon gryphon-right"></div>
+    <div class="xp-bar"><div class="xp-fill"></div></div>
+    <div class="bag-bar">
+      <div class="bag">🎒</div><div class="bag">🎒</div>
+      <div class="bag">🎒</div><div class="bag">🎒</div>
+    </div>
+  </div>
+  <div class="annotation">Full bar chrome visible. Looks like a 30-button bar with most slots blacked out — <span>not</span> like a WC3 unit.</div>
+</div>
+
+<hr>
+
+<!-- ─────────────────────────────── OPTION A ─────────────────────── -->
+<div class="option">
+  <div class="option-label">Option A — Hide MainMenuBarArtFrame</div>
+  <div class="option-desc">Removes stone background, gryphons, XP bar, bag slots. Buttons float over the game world.</div>
+  <div class="ui-root opt-a">
+    <div class="art-frame"></div>
+    <div class="gryphon gryphon-left"></div>
+    <div class="buttons">
+      <div class="btn core1"><span class="hotkey">1</span></div>
+      <div class="btn core2"><span class="hotkey">2</span></div>
+      <div class="btn core3"><span class="hotkey">3</span></div>
+      <div class="btn core4"><span class="hotkey">4</span></div>
+      <div class="btn ultimate"><span class="hotkey">5</span></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+    </div>
+    <div class="gryphon gryphon-right"></div>
+    <div class="xp-bar"><div class="xp-fill"></div></div>
+    <div class="bag-bar">
+      <div class="bag">🎒</div><div class="bag">🎒</div>
+      <div class="bag">🎒</div><div class="bag">🎒</div>
+    </div>
+  </div>
+  <div class="annotation">Chrome gone, but the 7 blacked-out slots are still floating there. Cleaner but still 12 button shapes visible.</div>
+</div>
+
+<hr>
+
+<!-- ─────────────────────────────── OPTION B ─────────────────────── -->
+<div class="option">
+  <div class="option-label">Option B — Hide entire MainMenuBar</div>
+  <div class="option-desc">Everything removed. You'd need to recreate the 5 allowed buttons as separate frames.</div>
+  <div class="ui-root opt-b">
+    <div class="art-frame"></div>
+    <div class="gryphon gryphon-left"></div>
+    <div class="buttons"></div>
+    <div class="gryphon gryphon-right"></div>
+    <div class="xp-bar"></div>
+    <div class="bag-bar"></div>
+    <div class="opt-b-label">[ action bar area — nothing here ]</div>
+  </div>
+  <div class="annotation">Completely blank. Bag slots and XP bar also gone. Requires a custom button implementation to be usable.</div>
+</div>
+
+<hr>
+
+<!-- ─────────────────────────────── OPTION C ─────────────────────── -->
+<div class="option">
+  <div class="option-label">Option C — Custom WC3-style bar (replaces native bar)</div>
+  <div class="option-desc">Native bar hidden entirely. 4 core + 1 larger ultimate, clean dark frame, no hotkey labels.</div>
+  <div style="display:flex; flex-direction:column; align-items:flex-start; width:640px;">
+    <div class="ui-root opt-c" style="width:auto; align-items:stretch;">
+      <div class="art-frame"></div>
+      <div class="gryphon gryphon-left"></div>
+      <div class="buttons">
+        <div class="btn core1"></div>
+        <div class="btn core2"></div>
+        <div class="btn core3"></div>
+        <div class="btn core4"></div>
+        <div class="btn ultimate"></div>
+      </div>
+      <div class="gryphon gryphon-right"></div>
+      <div class="xp-bar"></div>
+    </div>
+    <div class="wc3-labels">
+      <div class="wc3-label">Sunder Armor</div>
+      <div class="wc3-label">Shield Bash</div>
+      <div class="wc3-label">Shield Block</div>
+      <div class="wc3-label">Taunt</div>
+      <div class="wc3-label ult">⚡ Shield Wall</div>
+    </div>
+  </div>
+  <div class="annotation">Most WC3-authentic. Compact, no wasted space. <span>Requires</span> display-only custom buttons — user must still drag spells on the hidden native bar to keep functionality.</div>
+</div>
+
+<hr>
+
+<!-- ─────────────────────────────── OPTION D ─────────────────────── -->
+<div class="option">
+  <div class="option-label">Option D — Hide art frame + strip hotkey labels from blocked slots (recommended MVP)</div>
+  <div class="option-desc">Art frame hidden. Only the 5 active buttons float. No hotkey text on blocked slots.</div>
+  <div class="ui-root opt-d">
+    <div class="art-frame"></div>
+    <div class="gryphon gryphon-left"></div>
+    <div class="buttons">
+      <div class="btn core1"><span class="hotkey">1</span></div>
+      <div class="btn core2"><span class="hotkey">2</span></div>
+      <div class="btn core3"><span class="hotkey">3</span></div>
+      <div class="btn core4"><span class="hotkey">4</span></div>
+      <div class="btn ultimate"><span class="hotkey">5</span></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+      <div class="btn blocked"></div>
+    </div>
+    <div class="gryphon gryphon-right"></div>
+    <div class="xp-bar"><div class="xp-fill"></div></div>
+    <div class="bag-bar">
+      <div class="bag">🎒</div><div class="bag">🎒</div>
+      <div class="bag">🎒</div><div class="bag">🎒</div>
+    </div>
+  </div>
+  <div class="annotation">Lowest effort change. No chrome, no hotkey noise on dead slots. Still 12 button shapes but visually quieter. Easy to combine with C later.</div>
+</div>
+
+</body>
+</html>

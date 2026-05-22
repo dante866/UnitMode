@@ -1,0 +1,17 @@
+## Interface: 11508
+## Title: UnitMode
+## Notes: Play WoW Classic as a Warcraft III unit — 4 abilities, no more.
+## Author: dante866
+## Version: 0.1.0
+## SavedVariablesPerCharacter: UnitModeDB
+## X-Curse-Project-ID: 1550490
+## X-WoWI-ID:
+## X-License: MIT
+
+Init.lua
+UnitLibrary.lua
+ActionBar.lua
+CustomBuilder.lua
+Portrait.lua
+MinimapBtn.lua
+UI.lua
